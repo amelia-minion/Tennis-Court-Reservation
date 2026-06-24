@@ -9,6 +9,8 @@ export function normalizeLocale(value?: string | null): Locale {
 
 const en = {
   langName: "English",
+  siteTitle: "Xanh Tennis Reservation",
+  siteDescription: "Book tennis courts online.",
   backHome: "← Back to home",
   backCourts: "← Back to all courts",
   reserveCourt: "Reserve Court",
@@ -88,6 +90,8 @@ const en = {
 
 const vi: typeof en = {
   langName: "Tiếng Việt",
+  siteTitle: "Đặt sân Tennis Xanh",
+  siteDescription: "Đặt sân tennis trực tuyến.",
   backHome: "← Về trang chủ",
   backCourts: "← Về danh sách sân",
   reserveCourt: "Đặt sân",
