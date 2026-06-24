@@ -47,6 +47,11 @@ const en = {
   phoneNumber: "Phone Number",
   emailAddress: "Email Address",
   completeContact: "Please complete all contact information.",
+  booking: "Booking…",
+  errCourtTaken:
+    "This court is already booked during that time. Please choose another time.",
+  errGeneric:
+    "Something went wrong with your reservation. Please try again.",
 
   // Pricing
   courtPricing: "Court Pricing",
@@ -121,6 +126,10 @@ const vi: typeof en = {
   phoneNumber: "Số điện thoại",
   emailAddress: "Địa chỉ email",
   completeContact: "Vui lòng điền đầy đủ thông tin liên hệ.",
+  booking: "Đang đặt…",
+  errCourtTaken:
+    "Sân này đã được đặt trong khung giờ đó. Vui lòng chọn giờ khác.",
+  errGeneric: "Đã có lỗi xảy ra với đặt sân của bạn. Vui lòng thử lại.",
 
   // Pricing
   courtPricing: "Bảng Giá Sân",

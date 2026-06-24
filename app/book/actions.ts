@@ -95,13 +95,12 @@ export async function createReservation(formData: FormData) {
       .gt("end_time", start_time);
 
   if (overlapError) {
-    throw new Error(overlapError.message);
+    console.error("Overlap check failed:", overlapError);
+    return { error: "generic" as const };
   }
 
   if (overlappingReservations.length > 0) {
-    throw new Error(
-      "This court is already booked during that time. Please choose another time."
-    );
+    return { error: "court_taken" as const };
   }
 
   const reservation_code =
@@ -124,7 +123,8 @@ export async function createReservation(formData: FormData) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    console.error("Failed to insert reservation:", error);
+    return { error: "generic" as const };
   }
 
   // Sender must be on a domain verified in Resend to reach real customers.

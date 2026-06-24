@@ -28,7 +28,13 @@ export default async function BookPage({ searchParams }: Props) {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <form action={createReservation} className="space-y-4">
+          <form
+            action={async (formData: FormData) => {
+              "use server";
+              await createReservation(formData);
+            }}
+            className="space-y-4"
+          >
             <BookingForm selectedCourt={selectedCourt} locale={locale} />
 
             <button

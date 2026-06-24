@@ -37,7 +37,22 @@ const [email, setEmail] =
 const [selectedDayOffset, setSelectedDayOffset] =
 useState(0);
 
+const [errorMessage, setErrorMessage] =
+  useState<string | null>(null);
+
+const [isSubmitting, setIsSubmitting] =
+  useState(false);
+
 async function handleReserve() {
+  if (
+    !customerName ||
+    !phone ||
+    !email
+  ) {
+    setErrorMessage(t.completeContact);
+    return;
+  }
+
   const formData = new FormData();
 
   formData.append(
@@ -75,15 +90,24 @@ async function handleReserve() {
     duration
   );
 
-  if (
-    !customerName ||
-    !phone ||
-    !email
-  ) {
-    alert(t.completeContact);
-    return;
+  setErrorMessage(null);
+  setIsSubmitting(true);
+
+  try {
+    const result = await createReservation(formData);
+
+    // A successful reservation redirects, so reaching here with a
+    // result means something went wrong.
+    if (result?.error === "court_taken") {
+      setErrorMessage(t.errCourtTaken);
+    } else if (result?.error) {
+      setErrorMessage(t.errGeneric);
+    }
+  } catch {
+    setErrorMessage(t.errGeneric);
+  } finally {
+    setIsSubmitting(false);
   }
-  await createReservation(formData);
 }
 
 const selectedDate = new Date();
@@ -278,9 +302,10 @@ return ( <div className="space-y-8">
     <button
       key={time}
       disabled={reserved}
-      onClick={() =>
-        setSelectedTime(time)
-      }
+      onClick={() => {
+        setSelectedTime(time);
+        setErrorMessage(null);
+      }}
       className={`rounded-xl p-3 border font-medium transition ${
         reserved
           ? "bg-red-100 text-red-500 border-red-200 cursor-not-allowed"
@@ -409,13 +434,25 @@ return ( <div className="space-y-8">
   placeholder={t.emailAddress}
   />
 
+{errorMessage && (
+  <div
+    role="alert"
+    className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"
+  >
+    {errorMessage}
+  </div>
+)}
+
 <button
   type="button"
   onClick={handleReserve}
+  disabled={isSubmitting}
   className="
     w-full
     bg-green-700
     hover:bg-green-800
+    disabled:opacity-60
+    disabled:cursor-not-allowed
     text-white
     font-semibold
     py-3
@@ -423,7 +460,7 @@ return ( <div className="space-y-8">
     transition
   "
 >
-  {t.reserveCourt}
+  {isSubmitting ? t.booking : t.reserveCourt}
 </button>
 </div>
     </>
