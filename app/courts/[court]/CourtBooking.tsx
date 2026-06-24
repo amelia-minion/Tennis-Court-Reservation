@@ -20,7 +20,7 @@ type Props = {
 export default function CourtBooking({
   courtName,
   reservations,
-  locale = "en",
+  locale = "vi",
 }: Props) {
 
 const t = getDictionary(locale);

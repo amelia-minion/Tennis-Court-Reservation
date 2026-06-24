@@ -1,10 +1,10 @@
 export type Locale = "en" | "vi";
 
 export const LOCALE_COOKIE = "lang";
-export const DEFAULT_LOCALE: Locale = "en";
+export const DEFAULT_LOCALE: Locale = "vi";
 
 export function normalizeLocale(value?: string | null): Locale {
-  return value === "vi" ? "vi" : "en";
+  return value === "en" ? "en" : "vi";
 }
 
 const en = {

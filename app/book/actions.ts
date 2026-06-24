@@ -176,6 +176,7 @@ export async function createReservation(formData: FormData) {
     html: `
       <h2>New Reservation Received</h2>
 
+      <p><strong>Reference:</strong> ${reservation_code}</p>
       <p><strong>Name:</strong> ${customer_name}</p>
       <p><strong>Phone:</strong> ${phone}</p>
       <p><strong>Email:</strong> ${email}</p>
@@ -184,6 +185,7 @@ export async function createReservation(formData: FormData) {
       <p><strong>Time:</strong>
         ${formatTime(start_time)} - ${formatTime(end_time)}
       </p>
+      <p><strong>Total Price:</strong> ${total_price.toLocaleString()} VND</p>
     `,
   });
 

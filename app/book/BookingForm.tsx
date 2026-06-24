@@ -16,7 +16,7 @@ export default function BookingForm({
   selectedDate = "",
   selectedStartTime = "09:00",
   hideScheduleFields = false,
-  locale = "en",
+  locale = "vi",
 }: Props) {
   const t = getDictionary(locale);
   const [date, setDate] = useState(selectedDate);
