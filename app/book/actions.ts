@@ -133,7 +133,7 @@ export async function createReservation(formData: FormData) {
   const fromAddress =
     process.env.RESEND_FROM || "onboarding@resend.dev";
   const adminEmail =
-    process.env.ADMIN_EMAIL || "ameliadangwork@gmail.com";
+    process.env.ADMIN_EMAIL || "sangnhvt10012@gmail.com";
 
   // Email to the customer.
   const { error: customerEmailError } = await resend.emails.send({
