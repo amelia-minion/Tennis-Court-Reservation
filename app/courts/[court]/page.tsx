@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getLocale } from "@/lib/locale";
+import { getDictionary, displayCourt } from "@/lib/i18n";
 import CourtBooking from "./CourtBooking";
 
 const COURT_BY_SLUG: Record<string, string> = {
@@ -22,6 +24,9 @@ export default async function CourtPage({ params }: Props) {
     notFound();
   }
 
+  const locale = await getLocale();
+  const t = getDictionary(locale);
+
   const today = new Date().toISOString().split("T")[0];
   const weekAhead = new Date();
   weekAhead.setDate(weekAhead.getDate() + 6);
@@ -40,19 +45,20 @@ export default async function CourtPage({ params }: Props) {
     <main className="min-h-screen bg-stone-50 py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-5xl font-bold text-green-800 mb-4">
-          {courtName}
+          {displayCourt(courtName, locale)}
         </h1>
 
-        <p className="text-gray-600 mb-8">Select a start time.</p>
+        <p className="text-gray-600 mb-8">{t.selectStartTime}</p>
 
         <CourtBooking
           courtName={courtName}
           reservations={reservations ?? []}
+          locale={locale}
         />
 
         <p className="text-center mt-8">
           <Link href="/courts" className="text-green-700 hover:underline">
-            ← Back to all courts
+            {t.backCourts}
           </Link>
         </p>
       </div>

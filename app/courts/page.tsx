@@ -1,18 +1,23 @@
 import Link from "next/link";
+import { getLocale } from "@/lib/locale";
+import { getDictionary, displayCourt } from "@/lib/i18n";
 
 const COURTS = ["Court 1", "Court 2", "Court 3", "Court 4"];
 
-export default function CourtsPage() {
+export default async function CourtsPage() {
+  const locale = await getLocale();
+  const t = getDictionary(locale);
+
   return (
     <main className="min-h-screen bg-stone-50 py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-5xl font-bold text-green-800 mb-4">
-            Select a Court
+            {t.selectCourt}
           </h1>
 
           <p className="text-gray-600 text-lg">
-            Choose a court to view availability.
+            {t.selectCourtSubtitle}
           </p>
         </div>
 
@@ -54,11 +59,11 @@ export default function CourtsPage() {
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="bg-white/95 backdrop-blur px-6 py-3 rounded-2xl">
                 <h2 className="text-3xl font-bold text-green-900">
-                  {court}
+                  {displayCourt(court, locale)}
                 </h2>
           
                 <p className="text-sm text-gray-500 text-center">
-                  View Schedule
+                  {t.viewSchedule}
                 </p>
               </div>
             </div>
@@ -68,7 +73,7 @@ export default function CourtsPage() {
 
         <p className="text-center mt-8">
           <Link href="/" className="text-green-700 hover:underline">
-            ← Back to home
+            {t.backHome}
           </Link>
         </p>
       </div>

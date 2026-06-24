@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { getDictionary, displayCourt, type Locale } from "@/lib/i18n";
 
 type Props = {
   selectedCourt: string;
   selectedDate?: string;
   selectedStartTime?: string;
   hideScheduleFields?: boolean;
+  locale?: Locale;
 };
 
 export default function BookingForm({
@@ -14,7 +16,9 @@ export default function BookingForm({
   selectedDate = "",
   selectedStartTime = "09:00",
   hideScheduleFields = false,
+  locale = "en",
 }: Props) {
+  const t = getDictionary(locale);
   const [date, setDate] = useState(selectedDate);
   const [startTime, setStartTime] = useState(selectedStartTime);
 
@@ -52,27 +56,32 @@ export default function BookingForm({
         currentHour >= 6 &&
         currentHour < 9
       ) {
-        hourlyRate = 180000;
+        hourlyRate = 200000;
       } else if (
         currentHour >= 9 &&
-        currentHour < 15
-      ) {
-        hourlyRate = 100000;
-      } else if (
-        currentHour >= 15 &&
-        currentHour < 17
+        currentHour < 10
       ) {
         hourlyRate = 180000;
       } else if (
-        currentHour >= 17 &&
-        currentHour < 21
+        currentHour >= 10 &&
+        currentHour < 15
       ) {
-        hourlyRate = 300000;
+        hourlyRate = 120000;
       } else if (
-        currentHour >= 21 &&
+        currentHour >= 15 &&
+        currentHour < 16
+      ) {
+        hourlyRate = 180000;
+      } else if (
+        currentHour >= 16 &&
+        currentHour < 17
+      ) {
+        hourlyRate = 200000;
+      } else if (
+        currentHour >= 17 &&
         currentHour < 22
       ) {
-        hourlyRate = 240000;
+        hourlyRate = 320000;
       }
 
       total += hourlyRate / 2;
@@ -97,11 +106,11 @@ export default function BookingForm({
 
       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
         <p className="text-sm text-gray-600">
-          Selected Court
+          {t.selectedCourt}
         </p>
 
         <p className="text-xl font-bold text-green-800">
-          {selectedCourt}
+          {displayCourt(selectedCourt, locale)}
         </p>
       </div>
 
@@ -141,14 +150,14 @@ export default function BookingForm({
         className="w-full border border-gray-300 p-3 rounded-lg"
         required
       >
-        <option value="1">1 Hour</option>
-        <option value="2">2 Hours</option>
-        <option value="3">3 Hours</option>
-        <option value="4">4 Hours</option>
+        <option value="1">1 {t.hour}</option>
+        <option value="2">2 {t.hours}</option>
+        <option value="3">3 {t.hours}</option>
+        <option value="4">4 {t.hours}</option>
       </select>
 
       <div className="bg-white border-2 border-green-700 rounded-xl p-5">
-        <p className="text-gray-600">Estimated Price</p>
+        <p className="text-gray-600">{t.estimatedPrice}</p>
 
         <p className="text-3xl font-bold text-green-800">
           {estimatedPrice.toLocaleString()} VND
@@ -156,13 +165,13 @@ export default function BookingForm({
       </div>
 
       <div className="border-t pt-6">
-        <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+        <h2 className="text-xl font-semibold mb-4">{t.contactInformation}</h2>
 
         <div className="space-y-4">
           <input
             name="customer_name"
             type="text"
-            placeholder="Full Name"
+            placeholder={t.fullName}
             className="w-full border border-gray-300 p-3 rounded-lg"
             required
           />
@@ -170,7 +179,7 @@ export default function BookingForm({
           <input
             name="phone"
             type="tel"
-            placeholder="Phone Number"
+            placeholder={t.phoneNumber}
             className="w-full border border-gray-300 p-3 rounded-lg"
             required
           />
@@ -178,7 +187,7 @@ export default function BookingForm({
           <input
             name="email"
             type="email"
-            placeholder="Email"
+            placeholder={t.emailAddress}
             className="w-full border border-gray-300 p-3 rounded-lg"
             required
           />

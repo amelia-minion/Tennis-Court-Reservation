@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getLocale } from "@/lib/locale";
+import { getDictionary, displayCourt } from "@/lib/i18n";
 
 function formatTime(time: string) {
   const [hours, minutes] = time.split(":");
@@ -20,11 +22,13 @@ export default async function ConfirmationPage({
   searchParams: Promise<{ code?: string }>;
 }) {
   const { code } = await searchParams;
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   if (!code) {
     return (
       <main className="min-h-screen bg-stone-50 flex items-center justify-center p-8">
-        <p className="text-gray-600">No reservation found.</p>
+        <p className="text-gray-600">{t.noReservation}</p>
       </main>
     );
   }
@@ -38,7 +42,7 @@ export default async function ConfirmationPage({
   if (!reservation) {
     return (
       <main className="min-h-screen bg-stone-50 flex items-center justify-center p-8">
-        <p className="text-gray-600">Reservation not found.</p>
+        <p className="text-gray-600">{t.reservationNotFound}</p>
       </main>
     );
   }
@@ -48,39 +52,38 @@ export default async function ConfirmationPage({
       <div className="max-w-xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-green-800 mb-2">
-            Reservation Confirmed
+            {t.reservationConfirmed}
           </h1>
 
-          <p className="text-gray-600">
-            Your court has been booked successfully.
-          </p>
+          <p className="text-gray-600">{t.bookedSuccess}</p>
         </div>
 
         <div className="bg-white text-gray-800 rounded-2xl shadow-lg p-8 space-y-2">
           <p>
-            <strong>Reference:</strong> {reservation.reservation_code}
+            <strong>{t.reference}:</strong> {reservation.reservation_code}
           </p>
 
           <p>
-            <strong>Name:</strong> {reservation.customer_name}
+            <strong>{t.name}:</strong> {reservation.customer_name}
           </p>
 
           <p>
-            <strong>Phone:</strong> {reservation.phone}
+            <strong>{t.phone}:</strong> {reservation.phone}
           </p>
 
           <p>
-            <strong>Email:</strong> {reservation.email}
+            <strong>{t.email}:</strong> {reservation.email}
           </p>
 
           <p>
-            <strong>Court:</strong> {reservation.court}
+            <strong>{t.court}:</strong>{" "}
+            {displayCourt(reservation.court, locale)}
           </p>
 
           <p>
-            <strong>Date:</strong>{" "}
+            <strong>{t.date}:</strong>{" "}
             {new Date(reservation.reservation_date).toLocaleDateString(
-              "en-US",
+              locale === "vi" ? "vi-VN" : "en-US",
               {
                 year: "numeric",
                 month: "long",
@@ -90,23 +93,21 @@ export default async function ConfirmationPage({
           </p>
 
           <p>
-            <strong>Time:</strong> {formatTime(reservation.start_time)} –{" "}
+            <strong>{t.time}:</strong> {formatTime(reservation.start_time)} –{" "}
             {formatTime(reservation.end_time)}
           </p>
 
           <p>
-            <strong>Price:</strong> {reservation.total_price.toLocaleString()}{" "}
-            VND
+            <strong>{t.price}:</strong>{" "}
+            {reservation.total_price.toLocaleString()} VND
           </p>
 
-          <p className="pt-4 text-gray-600">
-            Payment will be collected at the court.
-          </p>
+          <p className="pt-4 text-gray-600">{t.paymentAtCourt}</p>
         </div>
 
         <p className="text-center mt-8">
           <Link href="/" className="text-green-700 hover:underline">
-            ← Back to home
+            {t.backHome}
           </Link>
         </p>
       </div>

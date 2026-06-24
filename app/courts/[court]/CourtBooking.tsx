@@ -3,6 +3,7 @@
 import { createReservation }
   from "@/app/book/actions";
 import { useMemo, useState } from "react";
+import { getDictionary, displayCourt, type Locale } from "@/lib/i18n";
 
 type Reservation = {
   reservation_date: string;
@@ -13,12 +14,16 @@ type Reservation = {
 type Props = {
   courtName: string;
   reservations: Reservation[];
+  locale?: Locale;
 };
 
 export default function CourtBooking({
   courtName,
   reservations,
+  locale = "en",
 }: Props) {
+
+const t = getDictionary(locale);
 
 const [customerName, setCustomerName] =
   useState("");
@@ -75,9 +80,7 @@ async function handleReserve() {
     !phone ||
     !email
   ) {
-    alert(
-      "Please complete all contact information."
-    );
+    alert(t.completeContact);
     return;
   }
   await createReservation(formData);
@@ -90,7 +93,7 @@ selectedDate.setDate(
   
 const selectedDateString =
   selectedDate.toLocaleDateString(
-    "en-US",
+    locale === "vi" ? "vi-VN" : "en-US",
     {
       year: "numeric",
       month: "long",
@@ -156,27 +159,32 @@ for (
     currentHour >= 6 &&
     currentHour < 9
   ) {
-    hourlyRate = 180000;
+    hourlyRate = 200000;
   } else if (
     currentHour >= 9 &&
-    currentHour < 15
-  ) {
-    hourlyRate = 100000;
-  } else if (
-    currentHour >= 15 &&
-    currentHour < 17
+    currentHour < 10
   ) {
     hourlyRate = 180000;
   } else if (
-    currentHour >= 17 &&
-    currentHour < 21
+    currentHour >= 10 &&
+    currentHour < 15
   ) {
-    hourlyRate = 300000;
+    hourlyRate = 120000;
   } else if (
-    currentHour >= 21 &&
+    currentHour >= 15 &&
+    currentHour < 16
+  ) {
+    hourlyRate = 180000;
+  } else if (
+    currentHour >= 16 &&
+    currentHour < 17
+  ) {
+    hourlyRate = 200000;
+  } else if (
+    currentHour >= 17 &&
     currentHour < 22
   ) {
-    hourlyRate = 240000;
+    hourlyRate = 320000;
   }
 
   total += hourlyRate / 2;
@@ -215,13 +223,28 @@ return ( <div className="space-y-8">
   <div className="flex gap-2 overflow-auto">
   {Array.from({ length: 7 }).map(
     (_, offset) => {
+      const labelDate = new Date();
+      labelDate.setDate(
+        labelDate.getDate() + offset
+      );
+
       let label = "";
 
       if (offset === 0)
-        label = "Today";
+        label = t.today;
       else if (offset === 1)
-        label = "Tomorrow";
-      else label = `+${offset} Days`;
+        label = t.tomorrow;
+      else {
+        const dd = String(
+          labelDate.getDate()
+        ).padStart(2, "0");
+
+        const mm = String(
+          labelDate.getMonth() + 1
+        ).padStart(2, "0");
+
+        label = `${dd}/${mm}`;
+      }
 
       return (
         <button
@@ -243,7 +266,7 @@ return ( <div className="space-y-8">
   )}
 </div>
     <h2 className="text-2xl font-semibold text-gray-400 mb-4">
-      Available Start Times
+      {t.availableStartTimes}
     </h2>
 
     <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
@@ -266,7 +289,7 @@ return ( <div className="space-y-8">
           : "bg-white border-gray-300 text-gray-900 hover:bg-green-50"
       }`}
     >
-      {reserved ? "Reserved" : time}
+      {reserved ? t.reserved : time}
     </button>
   );
 })}
@@ -278,7 +301,7 @@ return ( <div className="space-y-8">
 
   <div>
         <h2 className="text-2xl text-gray-400 font-semibold mb-4">
-          Duration
+          {t.duration}
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -299,7 +322,7 @@ return ( <div className="space-y-8">
                   : "bg-white border-gray-300 text-gray-900"
               }`}
             >
-              {value} Hour
+              {value} {t.hour}
             </button>
           ))}
         </div>
@@ -308,35 +331,35 @@ return ( <div className="space-y-8">
     <>
 <div className="bg-white border border-green-200 rounded-xl p-5 shadow-sm">
   <h3 className="text-lg font-semibold text-green-800 mb-4">
-    Selected Booking
+    {t.selectedBooking}
   </h3>
 
   <div className="space-y-2 text-gray-700">
     <div className="flex justify-between">
-      <span>Court</span>
+      <span>{t.court}</span>
       <span className="font-medium">
-        {courtName}
+        {displayCourt(courtName, locale)}
       </span>
     </div>
 
     <div className="flex justify-between">
-      <span>Date</span>
+      <span>{t.date}</span>
       <span className="font-medium">
         {selectedDateString}
       </span>
     </div>
 
     <div className="flex justify-between">
-      <span>Start Time</span>
+      <span>{t.startTime}</span>
       <span className="font-medium">
         {selectedTime}
       </span>
     </div>
 
     <div className="flex justify-between">
-      <span>Duration</span>
+      <span>{t.duration}</span>
       <span className="font-medium">
-        {duration} Hour
+        {duration} {t.hour}
       </span>
     </div>
   </div>
@@ -344,7 +367,7 @@ return ( <div className="space-y-8">
   <div className="border-t mt-4 pt-4">
     <div className="flex justify-between items-center">
       <span className="font-semibold text-gray-800">
-        Estimated Price
+        {t.estimatedPrice}
       </span>
 
       <span className="text-2xl font-bold text-green-800">
@@ -356,7 +379,7 @@ return ( <div className="space-y-8">
 
       <div className="space-y-4">
   <h2 className="text-2xl text-gray-400 font-semibold">
-    Contact Information
+    {t.contactInformation}
   </h2>
 
   <input
@@ -365,7 +388,7 @@ return ( <div className="space-y-8">
     setCustomerName(e.target.value)
   }
   className="w-full border border-gray-300 text-gray-500 rounded-xl p-3"
-  placeholder="Full Name"
+  placeholder={t.fullName}
   />
 
   <input
@@ -374,7 +397,7 @@ return ( <div className="space-y-8">
     setPhone(e.target.value)
   }
   className="w-full border border-gray-300 text-gray-500 rounded-xl p-3"
-  placeholder="Phone Number"
+  placeholder={t.phoneNumber}
   />
 
 <input
@@ -383,7 +406,7 @@ return ( <div className="space-y-8">
     setEmail(e.target.value)
   }
   className="w-full border border-gray-300 text-gray-500 rounded-xl p-3"
-  placeholder="Email Adress"
+  placeholder={t.emailAddress}
   />
 
 <button
@@ -400,7 +423,7 @@ return ( <div className="space-y-8">
     transition
   "
 >
-  Reserve Court
+  {t.reserveCourt}
 </button>
 </div>
     </>

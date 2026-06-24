@@ -20,15 +20,17 @@ function calculatePrice(startTime: string, durationHours: number) {
     if (currentHour >= 5 && currentHour < 6) {
       hourlyRate = 300000;
     } else if (currentHour >= 6 && currentHour < 9) {
+      hourlyRate = 200000;
+    } else if (currentHour >= 9 && currentHour < 10) {
       hourlyRate = 180000;
-    } else if (currentHour >= 9 && currentHour < 15) {
-      hourlyRate = 100000;
-    } else if (currentHour >= 15 && currentHour < 17) {
+    } else if (currentHour >= 10 && currentHour < 15) {
+      hourlyRate = 120000;
+    } else if (currentHour >= 15 && currentHour < 16) {
       hourlyRate = 180000;
-    } else if (currentHour >= 17 && currentHour < 21) {
-      hourlyRate = 300000;
-    } else if (currentHour >= 21 && currentHour < 22) {
-      hourlyRate = 240000;
+    } else if (currentHour >= 16 && currentHour < 17) {
+      hourlyRate = 200000;
+    } else if (currentHour >= 17 && currentHour < 22) {
+      hourlyRate = 320000;
     }
 
     total += hourlyRate / 2;
