@@ -127,8 +127,17 @@ export async function createReservation(formData: FormData) {
     throw new Error(error.message);
   }
 
-  await resend.emails.send({
-    from: "onboarding@resend.dev",
+  // Sender must be on a domain verified in Resend to reach real customers.
+  // Until xanhtennis.com is verified, fall back to Resend's sandbox sender
+  // (which only delivers to the Resend account owner's own email).
+  const fromAddress =
+    process.env.RESEND_FROM || "onboarding@resend.dev";
+  const adminEmail =
+    process.env.ADMIN_EMAIL || "ameliadangwork@gmail.com";
+
+  // Email to the customer.
+  const { error: customerEmailError } = await resend.emails.send({
+    from: fromAddress,
     to: email,
     subject: "Tennis Court Reservation Confirmed",
     html: `
@@ -152,9 +161,17 @@ export async function createReservation(formData: FormData) {
     `,
   });
 
-  await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: "ameliadangwork@gmail.com",
+  if (customerEmailError) {
+    console.error(
+      "Failed to send customer confirmation email:",
+      customerEmailError
+    );
+  }
+
+  // Email to the admin.
+  const { error: adminEmailError } = await resend.emails.send({
+    from: fromAddress,
+    to: adminEmail,
     subject: `New Reservation - ${reservation_code}`,
     html: `
       <h2>New Reservation Received</h2>
@@ -169,6 +186,13 @@ export async function createReservation(formData: FormData) {
       </p>
     `,
   });
+
+  if (adminEmailError) {
+    console.error(
+      "Failed to send admin notification email:",
+      adminEmailError
+    );
+  }
 
   redirect(`/confirmation?code=${reservation_code}`);
 }
