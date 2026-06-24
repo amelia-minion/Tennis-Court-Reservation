@@ -142,11 +142,8 @@ export default function BookingForm({
         required
       >
         <option value="1">1 Hour</option>
-        <option value="1.5">1.5 Hours</option>
         <option value="2">2 Hours</option>
-        <option value="2.5">2.5 Hours</option>
         <option value="3">3 Hours</option>
-        <option value="3.5">3.5 Hours</option>
         <option value="4">4 Hours</option>
       </select>
 

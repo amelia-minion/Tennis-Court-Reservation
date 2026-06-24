@@ -112,17 +112,13 @@ const times = [];
 for (
 let hour = 5;
 hour < 22;
-hour += 0.5
+hour += 1
 ) {
-const h = Math.floor(hour);
-const m =
-hour % 1 === 0 ? "00" : "30";
-
 times.push(
-  `${String(h).padStart(
+  `${String(hour).padStart(
     2,
     "0"
-  )}:${m}`
+  )}:00`
 );
 
 }
@@ -288,11 +284,8 @@ return ( <div className="space-y-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             "1",
-            "1.5",
             "2",
-            "2.5",
             "3",
-            "3.5",
             "4",
           ].map((value) => (
             <button
