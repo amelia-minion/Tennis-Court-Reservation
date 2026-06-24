@@ -1,0 +1,172 @@
+"use server";
+
+import { supabase } from "@/lib/supabase";
+import { resend } from "@/lib/resend";
+import { redirect } from "next/navigation";
+
+function calculatePrice(startTime: string, durationHours: number) {
+  let total = 0;
+
+  const [hourStr] = startTime.split(":");
+  const startHour = Number(hourStr);
+
+  const halfHours = durationHours * 2;
+
+  for (let i = 0; i < halfHours; i++) {
+    const currentHour = startHour + i * 0.5;
+
+    let hourlyRate = 0;
+
+    if (currentHour >= 5 && currentHour < 6) {
+      hourlyRate = 300000;
+    } else if (currentHour >= 6 && currentHour < 9) {
+      hourlyRate = 180000;
+    } else if (currentHour >= 9 && currentHour < 15) {
+      hourlyRate = 100000;
+    } else if (currentHour >= 15 && currentHour < 17) {
+      hourlyRate = 180000;
+    } else if (currentHour >= 17 && currentHour < 21) {
+      hourlyRate = 300000;
+    } else if (currentHour >= 21 && currentHour < 22) {
+      hourlyRate = 240000;
+    }
+
+    total += hourlyRate / 2;
+  }
+
+  return total;
+}
+
+function calculateEndTime(startTime: string, durationHours: number) {
+  const [hours, minutes] = startTime.split(":").map(Number);
+
+  const startMinutes = hours * 60 + minutes;
+  const endMinutes = startMinutes + durationHours * 60;
+
+  const endHours = Math.floor(endMinutes / 60);
+  const remainingMinutes = endMinutes % 60;
+
+  return `${String(endHours).padStart(2, "0")}:${String(
+    remainingMinutes
+  ).padStart(2, "0")}`;
+}
+
+function formatTime(time: string) {
+  const [hours, minutes] = time.split(":");
+
+  const date = new Date();
+  date.setHours(Number(hours));
+  date.setMinutes(Number(minutes));
+
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+export async function createReservation(formData: FormData) {
+  const customer_name = formData.get("customer_name") as string;
+  const phone = formData.get("phone") as string;
+  const email = formData.get("email") as string;
+  const court = formData.get("court") as string;
+  const reservation_date = formData.get("reservation_date") as string;
+  const start_time = formData.get("start_time") as string;
+  const duration_hours = Number(formData.get("duration_hours"));
+
+  const end_time = calculateEndTime(start_time, duration_hours);
+
+  const { data: overlappingReservations, error: overlapError } =
+    await supabase
+      .from("reservations")
+      .select("*")
+      .eq("court", court)
+      .eq("reservation_date", reservation_date)
+      .lt("start_time", end_time)
+      .gt("end_time", start_time);
+
+  if (overlapError) {
+    throw new Error(overlapError.message);
+  }
+
+  if (overlappingReservations.length > 0) {
+    throw new Error(
+      "This court is already booked during that time. Please choose another time."
+    );
+  }
+
+  const reservation_code =
+    "RSV-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+  const total_price = calculatePrice(start_time, duration_hours);
+
+  const { error } = await supabase.from("reservations").insert({
+    reservation_code,
+    customer_name,
+    phone,
+    email,
+    court,
+    reservation_date,
+    start_time,
+    end_time,
+    duration_hours,
+    total_price,
+    status: "confirmed",
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: "Tennis Court Reservation Confirmed",
+    html: `
+      <h2>Reservation Confirmed</h2>
+
+      <p><strong>Reference:</strong> ${reservation_code}</p>
+
+      <p><strong>Name:</strong> ${customer_name}</p>
+
+      <p><strong>Court:</strong> ${court}</p>
+
+      <p><strong>Date:</strong> ${formatDate(reservation_date)}</p>
+
+      <p><strong>Time:</strong> ${formatTime(start_time)} - ${formatTime(end_time)}</p>
+
+      <p><strong>Total Price:</strong>
+      ${total_price.toLocaleString()}
+      VND</p>
+
+      <p>Payment will be collected at the court.</p>
+    `,
+  });
+
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: "ameliadangwork@gmail.com",
+    subject: `New Reservation - ${reservation_code}`,
+    html: `
+      <h2>New Reservation Received</h2>
+
+      <p><strong>Name:</strong> ${customer_name}</p>
+      <p><strong>Phone:</strong> ${phone}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Court:</strong> ${court}</p>
+      <p><strong>Date:</strong> ${formatDate(reservation_date)}</p>
+      <p><strong>Time:</strong>
+        ${formatTime(start_time)} - ${formatTime(end_time)}
+      </p>
+    `,
+  });
+
+  redirect(`/confirmation?code=${reservation_code}`);
+}

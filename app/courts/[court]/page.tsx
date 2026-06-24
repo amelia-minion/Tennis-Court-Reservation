@@ -1,0 +1,61 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import CourtBooking from "./CourtBooking";
+
+const COURT_BY_SLUG: Record<string, string> = {
+  "court-1": "Court 1",
+  "court-2": "Court 2",
+  "court-3": "Court 3",
+  "court-4": "Court 4",
+};
+
+type Props = {
+  params: Promise<{ court: string }>;
+};
+
+export default async function CourtPage({ params }: Props) {
+  const { court: slug } = await params;
+  const courtName = COURT_BY_SLUG[slug];
+
+  if (!courtName) {
+    notFound();
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const weekAhead = new Date();
+  weekAhead.setDate(weekAhead.getDate() + 6);
+  const endDate = weekAhead.toISOString().split("T")[0];
+
+  const { data: reservations } = await supabase
+    .from("reservations")
+    .select("reservation_date, start_time, end_time")
+    .eq("court", courtName)
+    .gte("reservation_date", today)
+    .lte("reservation_date", endDate)
+    .order("reservation_date")
+    .order("start_time");
+
+  return (
+    <main className="min-h-screen bg-stone-50 py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-5xl font-bold text-green-800 mb-4">
+          {courtName}
+        </h1>
+
+        <p className="text-gray-600 mb-8">Select a start time.</p>
+
+        <CourtBooking
+          courtName={courtName}
+          reservations={reservations ?? []}
+        />
+
+        <p className="text-center mt-8">
+          <Link href="/courts" className="text-green-700 hover:underline">
+            ← Back to all courts
+          </Link>
+        </p>
+      </div>
+    </main>
+  );
+}
