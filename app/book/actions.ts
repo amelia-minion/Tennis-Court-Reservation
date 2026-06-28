@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/supabase";
 import { resend } from "@/lib/resend";
 import { redirect } from "next/navigation";
+import { findSchedulingConflicts, isDateWithinWindow, CUSTOMER_BOOKING_DAYS_AHEAD } from "@/lib/scheduling";
 
 function calculatePrice(startTime: string, durationHours: number) {
   let total = 0;
@@ -83,23 +84,31 @@ export async function createReservation(formData: FormData) {
   const start_time = formData.get("start_time") as string;
   const duration_hours = Number(formData.get("duration_hours"));
 
+  if (
+    !isDateWithinWindow(
+      reservation_date,
+      CUSTOMER_BOOKING_DAYS_AHEAD
+    )
+  ) {
+    return { error: "outside_window" as const };
+  }
+
   const end_time = calculateEndTime(start_time, duration_hours);
 
-  const { data: overlappingReservations, error: overlapError } =
-    await supabase
-      .from("reservations")
-      .select("*")
-      .eq("court", court)
-      .eq("reservation_date", reservation_date)
-      .lt("start_time", end_time)
-      .gt("end_time", start_time);
+  const { reservationError, lessonError, hasConflict } =
+    await findSchedulingConflicts(
+      court,
+      reservation_date,
+      start_time,
+      end_time
+    );
 
-  if (overlapError) {
-    console.error("Overlap check failed:", overlapError);
+  if (reservationError || lessonError) {
+    console.error("Overlap check failed:", reservationError || lessonError);
     return { error: "generic" as const };
   }
 
-  if (overlappingReservations.length > 0) {
+  if (hasConflict) {
     return { error: "court_taken" as const };
   }
 

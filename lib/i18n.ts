@@ -20,6 +20,7 @@ const en = {
   homeSubtitle: "Choose a court, view availability, and reserve your time.",
   viewCourts: "View Courts",
   viewRates: "View Court Rates",
+  coachLoginLink: "Coach login",
 
   // Courts list
   selectCourt: "Select a Court",
@@ -52,6 +53,8 @@ const en = {
   booking: "Booking…",
   errCourtTaken:
     "This court is already booked during that time. Please choose another time.",
+  errOutsideWindow:
+    "Reservations can only be made up to 6 days in advance.",
   errGeneric:
     "Something went wrong with your reservation. Please try again.",
 
@@ -86,6 +89,61 @@ const en = {
   // Book page
   reserveACourt: "Reserve a Court",
   bookSubtitle: "Choose your time and review the price before booking.",
+
+  // Coach
+  coachLoginTitle: "Head Coach Login",
+  coachLoginSubtitle: "Sign in to view reservations and schedule lessons.",
+  coachEmail: "Email",
+  coachPassword: "Password",
+  coachPasswordPlaceholder: "Password",
+  coachLoginButton: "Log In",
+  coachLoginInvalid: "Invalid email or password. Please try again.",
+  coachBackToSite: "← Back to site",
+  coachDashboardTitle: "Head Coach Dashboard",
+  coachSignedInAs: "Signed in as",
+  coachLogOut: "Log Out",
+  coachScheduleLesson: "Schedule a Lesson",
+  coachLessonTitlePlaceholder: "Lesson title (e.g. Beginner Group)",
+  coachSelectCourt: "Select court",
+  coachDuration1Hour: "1 hour",
+  coachDuration2Hours: "2 hours",
+  coachDuration3Hours: "3 hours",
+  coachRepeatWeekly: "Repeat this lesson weekly?",
+  coachRepeatNo: "No",
+  coachRepeatYes: "Yes",
+  coachRepeatWeeklyHint:
+    "Weekly lessons are created only for dates within the next 30 days.",
+  coachNotesPlaceholder: "Notes (optional)",
+  coachScheduleButton: "Schedule Lesson",
+  coachScheduling: "Scheduling…",
+  coachErrCourtTaken:
+    "This court is already booked during that time{date}. Choose another slot.",
+  coachErrOutsideWindow:
+    "Lessons can only be scheduled within the next 30 days.",
+  coachErrLessonsTableMissing:
+    "Lessons table is not set up yet. Run supabase/lessons.sql in your Supabase SQL Editor.",
+  coachErrGeneric:
+    "Could not schedule the lesson. Please check all fields and try again.",
+  coachSuccessLesson: "Lesson scheduled successfully.",
+  coachSuccessWeeklyLessons: "{count} weekly lessons scheduled successfully.",
+  coachSeriesGroupingHint:
+    " Run supabase/lessons-recurring.sql in Supabase to enable weekly series grouping.",
+  coachCalendarTitle: "Schedule Calendar",
+  coachCalendarSubtitle: "Reservations and lessons · {start} through {end}",
+  coachLegendReservation: "Customer reservation",
+  coachLegendLesson: "Coach lesson",
+  coachLessonsTableMissing:
+    "Lessons table not set up yet. Run supabase/lessons.sql in your Supabase SQL Editor.",
+  coachNoEvents: "No reservations or lessons in the next 30 days yet.",
+  coachRemove: "Remove",
+  coachModalReservation: "Customer reservation",
+  coachModalLesson: "Coach lesson",
+  coachModalClose: "Close",
+  coachModalWeekly: "Part of weekly series",
+  coachModalDeleteLesson: "Delete lesson",
+  coachModalNotes: "Notes",
+  coachModalLessonTitle: "Lesson",
+  coachLane: "Lane {lane}: {court}",
 };
 
 const vi: typeof en = {
@@ -101,6 +159,7 @@ const vi: typeof en = {
   homeSubtitle: "Chọn sân, xem lịch trống và đặt giờ chơi của bạn.",
   viewCourts: "Xem sân",
   viewRates: "Xem bảng giá",
+  coachLoginLink: "Đăng nhập huấn luyện viên",
 
   // Courts list
   selectCourt: "Chọn Sân",
@@ -133,6 +192,8 @@ const vi: typeof en = {
   booking: "Đang đặt…",
   errCourtTaken:
     "Sân này đã được đặt trong khung giờ đó. Vui lòng chọn giờ khác.",
+  errOutsideWindow:
+    "Chỉ có thể đặt sân trước tối đa 6 ngày.",
   errGeneric: "Đã có lỗi xảy ra với đặt sân của bạn. Vui lòng thử lại.",
 
   // Pricing
@@ -165,6 +226,61 @@ const vi: typeof en = {
   // Book page
   reserveACourt: "Đặt Sân",
   bookSubtitle: "Chọn giờ và xem giá trước khi đặt sân.",
+
+  // Coach
+  coachLoginTitle: "Đăng nhập huấn luyện viên",
+  coachLoginSubtitle: "Đăng nhập để xem đặt sân và lên lịch dạy.",
+  coachEmail: "Email",
+  coachPassword: "Mật khẩu",
+  coachPasswordPlaceholder: "Mật khẩu",
+  coachLoginButton: "Đăng nhập",
+  coachLoginInvalid: "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
+  coachBackToSite: "← Về trang chủ",
+  coachDashboardTitle: "Bảng Điều Khiển Huấn Luyện Viên",
+  coachSignedInAs: "Đăng nhập với",
+  coachLogOut: "Đăng xuất",
+  coachScheduleLesson: "Lên Lịch Buổi Dạy",
+  coachLessonTitlePlaceholder: "Tên buổi dạy (vd: Nhóm người mới)",
+  coachSelectCourt: "Chọn sân",
+  coachDuration1Hour: "1 giờ",
+  coachDuration2Hours: "2 giờ",
+  coachDuration3Hours: "3 giờ",
+  coachRepeatWeekly: "Lặp lại hàng tuần?",
+  coachRepeatNo: "Không",
+  coachRepeatYes: "Có",
+  coachRepeatWeeklyHint:
+    "Các buổi dạy hàng tuần chỉ được tạo trong vòng 30 ngày tới.",
+  coachNotesPlaceholder: "Ghi chú (tuỳ chọn)",
+  coachScheduleButton: "Lên lịch",
+  coachScheduling: "Đang lên lịch…",
+  coachErrCourtTaken:
+    "Sân này đã được đặt trong khung giờ đó{date}. Vui lòng chọn khung giờ khác.",
+  coachErrOutsideWindow:
+    "Chỉ có thể lên lịch dạy trong vòng 30 ngày tới.",
+  coachErrLessonsTableMissing:
+    "Bảng lessons chưa được thiết lập. Chạy supabase/lessons.sql trong Supabase SQL Editor.",
+  coachErrGeneric:
+    "Không thể lên lịch buổi dạy. Vui lòng kiểm tra các trường và thử lại.",
+  coachSuccessLesson: "Đã lên lịch buổi dạy thành công.",
+  coachSuccessWeeklyLessons: "Đã lên lịch {count} buổi dạy hàng tuần thành công.",
+  coachSeriesGroupingHint:
+    " Chạy supabase/lessons-recurring.sql trong Supabase để nhóm các buổi dạy hàng tuần.",
+  coachCalendarTitle: "Lịch Sân",
+  coachCalendarSubtitle: "Đặt sân và buổi dạy · {start} đến {end}",
+  coachLegendReservation: "Khách đặt sân",
+  coachLegendLesson: "Buổi dạy",
+  coachLessonsTableMissing:
+    "Bảng lessons chưa được thiết lập. Chạy supabase/lessons.sql trong Supabase SQL Editor.",
+  coachNoEvents: "Chưa có đặt sân hoặc buổi dạy nào trong 30 ngày tới.",
+  coachRemove: "Xóa",
+  coachModalReservation: "Khách đặt sân",
+  coachModalLesson: "Buổi dạy",
+  coachModalClose: "Đóng",
+  coachModalWeekly: "Thuộc chuỗi hàng tuần",
+  coachModalDeleteLesson: "Xóa buổi dạy",
+  coachModalNotes: "Ghi chú",
+  coachModalLessonTitle: "Buổi dạy",
+  coachLane: "Hàng {lane}: {court}",
 };
 
 export type Dictionary = typeof en;
@@ -179,4 +295,13 @@ export function getDictionary(locale: Locale): Dictionary {
 // This only changes how they are displayed, not the stored value.
 export function displayCourt(court: string, locale: Locale): string {
   return locale === "vi" ? court.replace("Court", "Sân") : court;
+}
+
+export function localeTag(locale: Locale) {
+  return locale === "vi" ? "vi-VN" : "en-US";
+}
+
+export function shortCourtLabel(court: string, locale: Locale) {
+  const number = court.replace("Court ", "");
+  return locale === "vi" ? `S${number}` : `C${number}`;
 }

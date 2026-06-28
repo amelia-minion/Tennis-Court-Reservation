@@ -4,22 +4,22 @@ import { createReservation }
   from "@/app/book/actions";
 import { useMemo, useState } from "react";
 import { getDictionary, displayCourt, type Locale } from "@/lib/i18n";
-
-type Reservation = {
-  reservation_date: string;
-  start_time: string;
-  end_time: string;
-};
+import {
+  CUSTOMER_BOOKING_DAYS_AHEAD,
+  formatDateKey,
+  isBookingBlocked,
+  type ScheduledBlock,
+} from "@/lib/scheduling";
 
 type Props = {
   courtName: string;
-  reservations: Reservation[];
+  scheduledBlocks: ScheduledBlock[];
   locale?: Locale;
 };
 
 export default function CourtBooking({
   courtName,
-  reservations,
+  scheduledBlocks,
   locale = "vi",
 }: Props) {
 
@@ -77,7 +77,7 @@ async function handleReserve() {
 
   formData.append(
     "reservation_date",
-    selectedDate.toISOString().split("T")[0]
+    selectedDateKey
   );
 
   formData.append(
@@ -100,6 +100,8 @@ async function handleReserve() {
     // result means something went wrong.
     if (result?.error === "court_taken") {
       setErrorMessage(t.errCourtTaken);
+    } else if (result?.error === "outside_window") {
+      setErrorMessage(t.errOutsideWindow);
     } else if (result?.error) {
       setErrorMessage(t.errGeneric);
     }
@@ -125,8 +127,7 @@ const selectedDateString =
     }
   );
 
-const selectedDateKey =
-  selectedDate.toISOString().split("T")[0];
+const selectedDateKey = formatDateKey(selectedDate);
 
 const [selectedTime, setSelectedTime] =
 useState("");
@@ -224,28 +225,22 @@ useMemo(
 [selectedTime, duration]
 );
 
-function isReserved(time: string) {
-  return reservations.some((reservation) => {
-    const start =
-      reservation.start_time.slice(0, 5);
-
-    const end =
-      reservation.end_time.slice(0, 5);
-
-    return (
-      reservation.reservation_date ===
-        selectedDateKey &&
-      time >= start &&
-      time < end
-    );
-  });
+function isBlocked(time: string) {
+  return isBookingBlocked(
+    scheduledBlocks,
+    selectedDateKey,
+    time,
+    Number(duration)
+  );
 }
 
 return ( <div className="space-y-8">
 
   <div>
   <div className="flex gap-2 overflow-auto">
-  {Array.from({ length: 7 }).map(
+  {Array.from({
+    length: CUSTOMER_BOOKING_DAYS_AHEAD + 1,
+  }).map(
     (_, offset) => {
       const labelDate = new Date();
       labelDate.setDate(
@@ -296,7 +291,7 @@ return ( <div className="space-y-8">
     <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
     {times.map((time) => {
   const reserved =
-    isReserved(time);
+    isBlocked(time);
 
   return (
     <button
@@ -338,9 +333,20 @@ return ( <div className="space-y-8">
           ].map((value) => (
             <button
               key={value}
-              onClick={() =>
-                setDuration(value)
-              }
+              onClick={() => {
+                setDuration(value);
+                if (
+                  selectedTime &&
+                  isBookingBlocked(
+                    scheduledBlocks,
+                    selectedDateKey,
+                    selectedTime,
+                    Number(value)
+                  )
+                ) {
+                  setSelectedTime("");
+                }
+              }}
               className={`rounded-xl p-3 border font-medium transition ${
                 duration === value
                   ? "bg-green-700 text-white"

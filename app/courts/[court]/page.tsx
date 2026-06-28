@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { getLocale } from "@/lib/locale";
 import { getDictionary, displayCourt } from "@/lib/i18n";
+import { fetchCourtBlocks, getTodayKey, getWindowEndKey, CUSTOMER_BOOKING_DAYS_AHEAD } from "@/lib/scheduling";
 import CourtBooking from "./CourtBooking";
 
 const COURT_BY_SLUG: Record<string, string> = {
@@ -27,19 +27,14 @@ export default async function CourtPage({ params }: Props) {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
-  const today = new Date().toISOString().split("T")[0];
-  const weekAhead = new Date();
-  weekAhead.setDate(weekAhead.getDate() + 6);
-  const endDate = weekAhead.toISOString().split("T")[0];
+  const today = getTodayKey();
+  const endDate = getWindowEndKey(CUSTOMER_BOOKING_DAYS_AHEAD);
 
-  const { data: reservations } = await supabase
-    .from("reservations")
-    .select("reservation_date, start_time, end_time")
-    .eq("court", courtName)
-    .gte("reservation_date", today)
-    .lte("reservation_date", endDate)
-    .order("reservation_date")
-    .order("start_time");
+  const scheduledBlocks = await fetchCourtBlocks(
+    courtName,
+    today,
+    endDate
+  );
 
   return (
     <main className="min-h-screen bg-stone-50 py-12 px-4">
@@ -52,7 +47,7 @@ export default async function CourtPage({ params }: Props) {
 
         <CourtBooking
           courtName={courtName}
-          reservations={reservations ?? []}
+          scheduledBlocks={scheduledBlocks}
           locale={locale}
         />
 
