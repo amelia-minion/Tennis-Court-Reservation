@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export const COACH_SESSION_COOKIE = "coach_session";
 /** @deprecated Legacy second cookie; cleared on login/logout. */
@@ -255,6 +255,47 @@ export function clearCoachSessionCookies(response: NextResponse) {
 
   response.cookies.set(COACH_SESSION_COOKIE, "", cleared);
   response.cookies.set(COACH_EMAIL_COOKIE, "", cleared);
+
+  return response;
+}
+
+export function coachHtmlRedirectResponse(
+  email: string,
+  targetPath: string,
+  message: string
+) {
+  const safeTarget = targetPath.startsWith("/") ? targetPath : "/coach/dashboard";
+  const escaped = message
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0;url=${safeTarget}" />
+    <title>Redirecting…</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 32rem; margin: 4rem auto; padding: 0 1rem; color: #166534; }
+      a { color: #15803d; }
+    </style>
+  </head>
+  <body>
+    <p>${escaped}</p>
+    <p><a href="${safeTarget}">Continue to dashboard</a></p>
+  </body>
+</html>`;
+
+  const response = new NextResponse(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+
+  applyCoachSessionCookies(response, email);
 
   return response;
 }

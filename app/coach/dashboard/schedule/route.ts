@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveCoachAuth } from "@/lib/coach-auth";
 import {
+  coachHtmlRedirectResponse,
+  resolveCoachAuth,
+} from "@/lib/coach-auth";
+import {
+  lessonFlashFromParams,
   lessonFlashFromResult,
   scheduleLessonFromForm,
 } from "@/lib/coach-lessons";
@@ -9,8 +13,14 @@ import { getLocale } from "@/lib/locale";
 
 export const runtime = "nodejs";
 
-function dashboardUrl(request: NextRequest) {
-  return new URL("/coach/dashboard", request.url);
+function dashboardPath(request: NextRequest, params: Record<string, string>) {
+  const url = new URL("/coach/dashboard", request.url);
+
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -30,25 +40,39 @@ export async function POST(request: NextRequest) {
   const locale = await getLocale();
   const t = getDictionary(locale);
   const result = await scheduleLessonFromForm(formData);
-  const redirectUrl = dashboardUrl(request);
 
   if ("success" in result && result.success) {
-    redirectUrl.searchParams.set("lesson", "success");
-    redirectUrl.searchParams.set("count", String(result.count));
+    const params: Record<string, string> = {
+      lesson: "success",
+      count: String(result.count),
+    };
 
     if (result.recurring && !result.seriesLinked) {
-      redirectUrl.searchParams.set("series_linked", "0");
+      params.series_linked = "0";
     }
 
-    return NextResponse.redirect(redirectUrl, 303);
+    const flash = lessonFlashFromParams(params, t);
+    const message = flash?.message ?? t.coachSuccessLesson;
+
+    return coachHtmlRedirectResponse(
+      coachEmail,
+      dashboardPath(request, params),
+      message
+    );
   }
 
   const flash = lessonFlashFromResult(result, t);
-  redirectUrl.searchParams.set("lesson_error", flash.error ?? "generic");
+  const params: Record<string, string> = {
+    lesson_error: flash.error ?? "generic",
+  };
 
   if ("conflictDate" in result) {
-    redirectUrl.searchParams.set("conflict_date", result.conflictDate);
+    params.conflict_date = result.conflictDate;
   }
 
-  return NextResponse.redirect(redirectUrl, 303);
+  return coachHtmlRedirectResponse(
+    coachEmail,
+    dashboardPath(request, params),
+    flash.message ?? t.coachErrGeneric
+  );
 }
