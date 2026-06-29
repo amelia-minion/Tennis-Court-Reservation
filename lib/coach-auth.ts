@@ -76,11 +76,6 @@ function tokensMatch(token: string, email: string) {
   }
 }
 
-function buildSessionValue(email: string) {
-  const normalizedEmail = normalizeEmail(email);
-  return `${normalizedEmail}|${signSession(normalizedEmail)}`;
-}
-
 function parseSessionValue(rawValue: string): string | null {
   const value = decodeCookieValue(rawValue);
   const separator = value.indexOf("|");
@@ -101,6 +96,89 @@ function parseSessionValue(rawValue: string): string | null {
   }
 
   return email;
+}
+
+function buildSessionValue(email: string) {
+  const normalizedEmail = normalizeEmail(email);
+  return `${normalizedEmail}|${signSession(normalizedEmail)}`;
+}
+
+const FORM_TOKEN_TTL_MS = 8 * 60 * 60 * 1000;
+
+function signFormPayload(payload: string) {
+  return createHmac("sha256", getSessionSecret())
+    .update(`form:${payload}`)
+    .digest("hex");
+}
+
+export function createCoachFormToken(email: string): string {
+  const normalizedEmail = normalizeEmail(email);
+  const exp = Date.now() + FORM_TOKEN_TTL_MS;
+  const payload = `${normalizedEmail}|${exp}`;
+  const signature = signFormPayload(payload);
+
+  return Buffer.from(`${payload}|${signature}`).toString("base64url");
+}
+
+export function verifyCoachFormToken(
+  token: string | null | undefined
+): string | null {
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const decoded = Buffer.from(token, "base64url").toString("utf8");
+    const signatureStart = decoded.lastIndexOf("|");
+
+    if (signatureStart === -1) {
+      return null;
+    }
+
+    const payload = decoded.slice(0, signatureStart);
+    const signature = decoded.slice(signatureStart + 1);
+    const expected = signFormPayload(payload);
+
+    if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+      return null;
+    }
+
+    const separator = payload.indexOf("|");
+
+    if (separator === -1) {
+      return null;
+    }
+
+    const email = normalizeEmail(payload.slice(0, separator));
+    const exp = Number(payload.slice(separator + 1));
+
+    if (!Number.isFinite(exp) || Date.now() > exp) {
+      return null;
+    }
+
+    if (!getAllowedCoachEmails().includes(email)) {
+      return null;
+    }
+
+    return email;
+  } catch {
+    return null;
+  }
+}
+
+export function resolveCoachAuth(options: {
+  cookieStore?: CookieReader;
+  formToken?: string | null;
+}): string | null {
+  if (options.cookieStore) {
+    const fromCookie = getLoggedInCoachEmailFromCookies(options.cookieStore);
+
+    if (fromCookie) {
+      return fromCookie;
+    }
+  }
+
+  return verifyCoachFormToken(options.formToken);
 }
 
 export function verifyCoachCredentials(

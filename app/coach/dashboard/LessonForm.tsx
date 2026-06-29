@@ -16,9 +16,16 @@ type Props = {
   today: string;
   maxDate: string;
   flash: LessonFlash | null;
+  formToken: string;
 };
 
-export default function LessonForm({ locale, today, maxDate, flash }: Props) {
+export default function LessonForm({
+  locale,
+  today,
+  maxDate,
+  flash,
+  formToken,
+}: Props) {
   const t = getDictionary(locale);
 
   return (
@@ -57,6 +64,7 @@ export default function LessonForm({ locale, today, maxDate, flash }: Props) {
         method="POST"
         className="grid gap-4 md:grid-cols-2"
       >
+        <input type="hidden" name="coach_token" value={formToken} />
         <input
           name="title"
           type="text"

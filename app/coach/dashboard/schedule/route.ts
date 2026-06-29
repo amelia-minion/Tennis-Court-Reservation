@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getLoggedInCoachEmail } from "@/lib/coach-auth";
+import { resolveCoachAuth } from "@/lib/coach-auth";
 import {
   lessonFlashFromResult,
   scheduleLessonFromForm,
@@ -14,7 +14,11 @@ function dashboardUrl(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const coachEmail = await getLoggedInCoachEmail();
+  const formData = await request.formData();
+  const coachEmail = resolveCoachAuth({
+    cookieStore: request.cookies,
+    formToken: formData.get("coach_token") as string | null,
+  });
 
   if (!coachEmail) {
     return NextResponse.redirect(
@@ -25,7 +29,6 @@ export async function POST(request: NextRequest) {
 
   const locale = await getLocale();
   const t = getDictionary(locale);
-  const formData = await request.formData();
   const result = await scheduleLessonFromForm(formData);
   const redirectUrl = dashboardUrl(request);
 

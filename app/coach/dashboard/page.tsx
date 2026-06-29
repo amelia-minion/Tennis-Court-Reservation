@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { getLoggedInCoachEmail, requireCoach } from "@/lib/coach-auth";
+import { getLoggedInCoachEmail, requireCoach, createCoachFormToken } from "@/lib/coach-auth";
 import { lessonFlashFromParams } from "@/lib/coach-lessons";
 import { getDictionary } from "@/lib/i18n";
 import { getLocale } from "@/lib/locale";
@@ -51,6 +51,7 @@ export default async function CoachDashboardPage({ searchParams }: Props) {
     ]);
 
   const loggedInEmail = await getLoggedInCoachEmail();
+  const formToken = loggedInEmail ? createCoachFormToken(loggedInEmail) : "";
 
   return (
     <main className="min-h-screen bg-stone-50 py-8 px-4">
@@ -78,6 +79,7 @@ export default async function CoachDashboardPage({ searchParams }: Props) {
           today={startDate}
           maxDate={endDate}
           flash={flash}
+          formToken={formToken}
         />
 
         <ScheduleCalendar
