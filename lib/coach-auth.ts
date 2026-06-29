@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const COACH_SESSION_COOKIE = "coach_session";
+export const COACH_EMAIL_COOKIE = "coach_session_email";
 
 const DEFAULT_COACH_EMAILS = [
   "ameliadangwork@gmail.com",
@@ -10,13 +11,22 @@ const DEFAULT_COACH_EMAILS = [
 ];
 
 const DEFAULT_COACH_PASSWORD = "tennisso1thegioi143@!";
+const DEFAULT_SESSION_SECRET = "xanh-tennis-coach-session-secret";
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 60 * 60 * 24 * 7,
+};
+
 export function getAllowedCoachEmails(): string[] {
-  const configured = process.env.COACH_EMAIL;
+  const configured = process.env.COACH_EMAIL?.trim();
 
   if (!configured) {
     return DEFAULT_COACH_EMAILS.map(normalizeEmail);
@@ -29,15 +39,13 @@ export function getAllowedCoachEmails(): string[] {
 }
 
 export function getCoachPassword(): string {
-  return process.env.COACH_PASSWORD || DEFAULT_COACH_PASSWORD;
+  const configured = process.env.COACH_PASSWORD?.trim();
+  return configured || DEFAULT_COACH_PASSWORD;
 }
 
 function getSessionSecret(): string {
-  return (
-    process.env.COACH_SESSION_SECRET ||
-    process.env.RESEND_API_KEY ||
-    "coach-dev-secret"
-  );
+  const configured = process.env.COACH_SESSION_SECRET?.trim();
+  return configured || DEFAULT_SESSION_SECRET;
 }
 
 function signSession(email: string): string {
@@ -71,20 +79,17 @@ export function verifyCoachCredentials(
 
 export async function createCoachSession(email: string) {
   const cookieStore = await cookies();
-  const token = signSession(email);
+  const normalizedEmail = normalizeEmail(email);
+  const token = signSession(normalizedEmail);
 
-  cookieStore.set(COACH_SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  cookieStore.set(COACH_SESSION_COOKIE, token, cookieOptions);
+  cookieStore.set(COACH_EMAIL_COOKIE, normalizedEmail, cookieOptions);
 }
 
 export async function clearCoachSession() {
   const cookieStore = await cookies();
   cookieStore.delete(COACH_SESSION_COOKIE);
+  cookieStore.delete(COACH_EMAIL_COOKIE);
 }
 
 export async function getLoggedInCoachEmail(): Promise<string | null> {
@@ -93,6 +98,22 @@ export async function getLoggedInCoachEmail(): Promise<string | null> {
 
   if (!token) {
     return null;
+  }
+
+  const emailFromCookie = cookieStore.get(COACH_EMAIL_COOKIE)?.value;
+
+  if (emailFromCookie) {
+    const normalizedEmail = normalizeEmail(emailFromCookie);
+
+    if (!getAllowedCoachEmails().includes(normalizedEmail)) {
+      return null;
+    }
+
+    if (!tokensMatch(token, normalizedEmail)) {
+      return null;
+    }
+
+    return normalizedEmail;
   }
 
   return (

@@ -1,0 +1,46 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getLoggedInCoachEmail } from "@/lib/coach-auth";
+import {
+  lessonFlashFromResult,
+  scheduleLessonFromForm,
+} from "@/lib/coach-lessons";
+import { getDictionary } from "@/lib/i18n";
+import { getLocale } from "@/lib/locale";
+
+function dashboardUrl(request: NextRequest) {
+  return new URL("/coach/dashboard", request.url);
+}
+
+export async function POST(request: NextRequest) {
+  const locale = await getLocale();
+  const t = getDictionary(locale);
+  const redirectUrl = dashboardUrl(request);
+
+  if (!(await getLoggedInCoachEmail())) {
+    redirectUrl.searchParams.set("lesson_error", "unauthorized");
+    return NextResponse.redirect(redirectUrl, 303);
+  }
+
+  const formData = await request.formData();
+  const result = await scheduleLessonFromForm(formData);
+
+  if ("success" in result && result.success) {
+    redirectUrl.searchParams.set("lesson", "success");
+    redirectUrl.searchParams.set("count", String(result.count));
+
+    if (result.recurring && !result.seriesLinked) {
+      redirectUrl.searchParams.set("series_linked", "0");
+    }
+
+    return NextResponse.redirect(redirectUrl, 303);
+  }
+
+  const flash = lessonFlashFromResult(result, t);
+  redirectUrl.searchParams.set("lesson_error", flash.error ?? "generic");
+
+  if ("conflictDate" in result) {
+    redirectUrl.searchParams.set("conflict_date", result.conflictDate);
+  }
+
+  return NextResponse.redirect(redirectUrl, 303);
+}

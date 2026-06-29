@@ -124,6 +124,8 @@ const en = {
     "Lessons table is not set up yet. Run supabase/lessons.sql in your Supabase SQL Editor.",
   coachErrGeneric:
     "Could not schedule the lesson. Please check all fields and try again.",
+  coachErrUnauthorized:
+    "Your session expired. Please log in again to schedule lessons.",
   coachSuccessLesson: "Lesson scheduled successfully.",
   coachSuccessWeeklyLessons: "{count} weekly lessons scheduled successfully.",
   coachSeriesGroupingHint:
@@ -261,6 +263,8 @@ const vi: typeof en = {
     "Bảng lessons chưa được thiết lập. Chạy supabase/lessons.sql trong Supabase SQL Editor.",
   coachErrGeneric:
     "Không thể lên lịch buổi dạy. Vui lòng kiểm tra các trường và thử lại.",
+  coachErrUnauthorized:
+    "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để lên lịch buổi dạy.",
   coachSuccessLesson: "Đã lên lịch buổi dạy thành công.",
   coachSuccessWeeklyLessons: "Đã lên lịch {count} buổi dạy hàng tuần thành công.",
   coachSeriesGroupingHint:
