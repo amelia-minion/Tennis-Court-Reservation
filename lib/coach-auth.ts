@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { NextResponse } from "next/server";
 
 export const COACH_SESSION_COOKIE = "coach_session";
 export const COACH_EMAIL_COOKIE = "coach_session_email";
@@ -11,19 +12,24 @@ const DEFAULT_COACH_EMAILS = [
 ];
 
 const DEFAULT_COACH_PASSWORD = "tennisso1thegioi143@!";
-const DEFAULT_SESSION_SECRET = "xanh-tennis-coach-session-secret";
+const DEFAULT_SESSION_SECRET = "xanh-tennis-coach-secret";
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-  maxAge: 60 * 60 * 24 * 7,
-};
+export function getCoachCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+    ...(process.env.NODE_ENV === "production"
+      ? { domain: ".xanhtennis.com" as const }
+      : {}),
+  };
+}
 
 export function getAllowedCoachEmails(): string[] {
   const configured = process.env.COACH_EMAIL?.trim();
@@ -73,27 +79,17 @@ export function verifyCoachCredentials(
 
   return (
     allowedEmails.includes(normalizedEmail) &&
-    password === getCoachPassword()
+    password.trim() === getCoachPassword()
   );
 }
 
-export async function createCoachSession(email: string) {
-  const cookieStore = await cookies();
-  const normalizedEmail = normalizeEmail(email);
-  const token = signSession(normalizedEmail);
+type CookieReader = {
+  get: (name: string) => { value: string } | undefined;
+};
 
-  cookieStore.set(COACH_SESSION_COOKIE, token, cookieOptions);
-  cookieStore.set(COACH_EMAIL_COOKIE, normalizedEmail, cookieOptions);
-}
-
-export async function clearCoachSession() {
-  const cookieStore = await cookies();
-  cookieStore.delete(COACH_SESSION_COOKIE);
-  cookieStore.delete(COACH_EMAIL_COOKIE);
-}
-
-export async function getLoggedInCoachEmail(): Promise<string | null> {
-  const cookieStore = await cookies();
+export function getLoggedInCoachEmailFromCookies(
+  cookieStore: CookieReader
+): string | null {
   const token = cookieStore.get(COACH_SESSION_COOKIE)?.value;
 
   if (!token) {
@@ -119,6 +115,52 @@ export async function getLoggedInCoachEmail(): Promise<string | null> {
   return (
     getAllowedCoachEmails().find((email) => tokensMatch(token, email)) ?? null
   );
+}
+
+export function applyCoachSessionCookies(
+  response: NextResponse,
+  email: string
+) {
+  const normalizedEmail = normalizeEmail(email);
+  const token = signSession(normalizedEmail);
+  const options = getCoachCookieOptions();
+
+  response.cookies.set(COACH_SESSION_COOKIE, token, options);
+  response.cookies.set(COACH_EMAIL_COOKIE, normalizedEmail, options);
+
+  return response;
+}
+
+export function clearCoachSessionCookies(response: NextResponse) {
+  const options = { ...getCoachCookieOptions(), maxAge: 0 };
+
+  response.cookies.set(COACH_SESSION_COOKIE, "", options);
+  response.cookies.set(COACH_EMAIL_COOKIE, "", options);
+
+  return response;
+}
+
+export async function createCoachSession(email: string) {
+  const cookieStore = await cookies();
+  const normalizedEmail = normalizeEmail(email);
+  const token = signSession(normalizedEmail);
+  const options = getCoachCookieOptions();
+
+  cookieStore.set(COACH_SESSION_COOKIE, token, options);
+  cookieStore.set(COACH_EMAIL_COOKIE, normalizedEmail, options);
+}
+
+export async function clearCoachSession() {
+  const cookieStore = await cookies();
+  const options = { ...getCoachCookieOptions(), maxAge: 0 };
+
+  cookieStore.set(COACH_SESSION_COOKIE, "", options);
+  cookieStore.set(COACH_EMAIL_COOKIE, "", options);
+}
+
+export async function getLoggedInCoachEmail(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return getLoggedInCoachEmailFromCookies(cookieStore);
 }
 
 export async function isCoachAuthenticated(): Promise<boolean> {

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getLoggedInCoachEmail } from "@/lib/coach-auth";
+import {
+  clearCoachSessionCookies,
+  getLoggedInCoachEmailFromCookies,
+} from "@/lib/coach-auth";
 import {
   lessonFlashFromResult,
   scheduleLessonFromForm,
@@ -14,15 +17,18 @@ function dashboardUrl(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const locale = await getLocale();
   const t = getDictionary(locale);
-  const redirectUrl = dashboardUrl(request);
+  const coachEmail = getLoggedInCoachEmailFromCookies(request.cookies);
 
-  if (!(await getLoggedInCoachEmail())) {
-    redirectUrl.searchParams.set("lesson_error", "unauthorized");
-    return NextResponse.redirect(redirectUrl, 303);
+  if (!coachEmail) {
+    return NextResponse.redirect(
+      new URL("/coach/login?error=session", request.url),
+      303
+    );
   }
 
   const formData = await request.formData();
   const result = await scheduleLessonFromForm(formData);
+  const redirectUrl = dashboardUrl(request);
 
   if ("success" in result && result.success) {
     redirectUrl.searchParams.set("lesson", "success");

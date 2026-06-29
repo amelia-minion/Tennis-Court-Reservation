@@ -98,6 +98,8 @@ const en = {
   coachPasswordPlaceholder: "Password",
   coachLoginButton: "Log In",
   coachLoginInvalid: "Invalid email or password. Please try again.",
+  coachLoginSession:
+    "Your session expired. Please log in again to continue.",
   coachBackToSite: "← Back to site",
   coachDashboardTitle: "Head Coach Dashboard",
   coachSignedInAs: "Signed in as",
@@ -237,6 +239,8 @@ const vi: typeof en = {
   coachPasswordPlaceholder: "Mật khẩu",
   coachLoginButton: "Đăng nhập",
   coachLoginInvalid: "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
+  coachLoginSession:
+    "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.",
   coachBackToSite: "← Về trang chủ",
   coachDashboardTitle: "Bảng Điều Khiển Huấn Luyện Viên",
   coachSignedInAs: "Đăng nhập với",

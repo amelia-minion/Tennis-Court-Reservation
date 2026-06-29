@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDictionary } from "@/lib/i18n";
 import { getLocale } from "@/lib/locale";
-import { ensureGuestCoach, loginCoach } from "./actions";
+import { ensureGuestCoach } from "./actions";
 
 type Props = {
   searchParams: Promise<{ error?: string }>;
@@ -33,7 +33,16 @@ export default async function CoachLoginPage({ searchParams }: Props) {
             </div>
           )}
 
-          <form action={loginCoach} className="space-y-4">
+          {error === "session" && (
+            <div
+              role="alert"
+              className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800"
+            >
+              {t.coachLoginSession}
+            </div>
+          )}
+
+          <form action="/coach/login/submit" method="POST" className="space-y-4">
             <div>
               <label
                 htmlFor="email"
