@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  clearCoachSessionCookies,
-  getLoggedInCoachEmailFromCookies,
-} from "@/lib/coach-auth";
+import { getLoggedInCoachEmail } from "@/lib/coach-auth";
 import {
   lessonFlashFromResult,
   scheduleLessonFromForm,
@@ -10,14 +7,14 @@ import {
 import { getDictionary } from "@/lib/i18n";
 import { getLocale } from "@/lib/locale";
 
+export const runtime = "nodejs";
+
 function dashboardUrl(request: NextRequest) {
   return new URL("/coach/dashboard", request.url);
 }
 
 export async function POST(request: NextRequest) {
-  const locale = await getLocale();
-  const t = getDictionary(locale);
-  const coachEmail = getLoggedInCoachEmailFromCookies(request.cookies);
+  const coachEmail = await getLoggedInCoachEmail();
 
   if (!coachEmail) {
     return NextResponse.redirect(
@@ -26,6 +23,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const locale = await getLocale();
+  const t = getDictionary(locale);
   const formData = await request.formData();
   const result = await scheduleLessonFromForm(formData);
   const redirectUrl = dashboardUrl(request);

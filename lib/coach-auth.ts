@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { NextResponse } from "next/server";
 
 export const COACH_SESSION_COOKIE = "coach_session";
+/** @deprecated Legacy second cookie; cleared on login/logout. */
 export const COACH_EMAIL_COOKIE = "coach_session_email";
 
 const DEFAULT_COACH_EMAILS = [
@@ -15,7 +16,15 @@ const DEFAULT_COACH_PASSWORD = "tennisso1thegioi143@!";
 const DEFAULT_SESSION_SECRET = "xanh-tennis-coach-secret";
 
 function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
+  return decodeCookieValue(email).trim().toLowerCase();
+}
+
+function decodeCookieValue(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 export function getCoachCookieOptions() {
@@ -25,9 +34,6 @@ export function getCoachCookieOptions() {
     sameSite: "lax" as const,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
-    ...(process.env.NODE_ENV === "production"
-      ? { domain: ".xanhtennis.com" as const }
-      : {}),
   };
 }
 
@@ -70,6 +76,33 @@ function tokensMatch(token: string, email: string) {
   }
 }
 
+function buildSessionValue(email: string) {
+  const normalizedEmail = normalizeEmail(email);
+  return `${normalizedEmail}|${signSession(normalizedEmail)}`;
+}
+
+function parseSessionValue(rawValue: string): string | null {
+  const value = decodeCookieValue(rawValue);
+  const separator = value.indexOf("|");
+
+  if (separator === -1) {
+    return null;
+  }
+
+  const email = normalizeEmail(value.slice(0, separator));
+  const token = value.slice(separator + 1);
+
+  if (!getAllowedCoachEmails().includes(email)) {
+    return null;
+  }
+
+  if (!tokensMatch(token, email)) {
+    return null;
+  }
+
+  return email;
+}
+
 export function verifyCoachCredentials(
   email: string,
   password: string
@@ -90,9 +123,17 @@ type CookieReader = {
 export function getLoggedInCoachEmailFromCookies(
   cookieStore: CookieReader
 ): string | null {
-  const token = cookieStore.get(COACH_SESSION_COOKIE)?.value;
+  const sessionValue = cookieStore.get(COACH_SESSION_COOKIE)?.value;
 
-  if (!token) {
+  if (sessionValue) {
+    const parsed = parseSessionValue(sessionValue);
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  const legacyToken = sessionValue;
+  if (!legacyToken || legacyToken.includes("|")) {
     return null;
   }
 
@@ -105,7 +146,7 @@ export function getLoggedInCoachEmailFromCookies(
       return null;
     }
 
-    if (!tokensMatch(token, normalizedEmail)) {
+    if (!tokensMatch(legacyToken, normalizedEmail)) {
       return null;
     }
 
@@ -113,7 +154,8 @@ export function getLoggedInCoachEmailFromCookies(
   }
 
   return (
-    getAllowedCoachEmails().find((email) => tokensMatch(token, email)) ?? null
+    getAllowedCoachEmails().find((email) => tokensMatch(legacyToken, email)) ??
+    null
   );
 }
 
@@ -121,41 +163,39 @@ export function applyCoachSessionCookies(
   response: NextResponse,
   email: string
 ) {
-  const normalizedEmail = normalizeEmail(email);
-  const token = signSession(normalizedEmail);
   const options = getCoachCookieOptions();
+  const cleared = { ...options, maxAge: 0 };
 
-  response.cookies.set(COACH_SESSION_COOKIE, token, options);
-  response.cookies.set(COACH_EMAIL_COOKIE, normalizedEmail, options);
+  response.cookies.set(COACH_SESSION_COOKIE, buildSessionValue(email), options);
+  response.cookies.set(COACH_EMAIL_COOKIE, "", cleared);
 
   return response;
 }
 
 export function clearCoachSessionCookies(response: NextResponse) {
-  const options = { ...getCoachCookieOptions(), maxAge: 0 };
+  const cleared = { ...getCoachCookieOptions(), maxAge: 0 };
 
-  response.cookies.set(COACH_SESSION_COOKIE, "", options);
-  response.cookies.set(COACH_EMAIL_COOKIE, "", options);
+  response.cookies.set(COACH_SESSION_COOKIE, "", cleared);
+  response.cookies.set(COACH_EMAIL_COOKIE, "", cleared);
 
   return response;
 }
 
 export async function createCoachSession(email: string) {
   const cookieStore = await cookies();
-  const normalizedEmail = normalizeEmail(email);
-  const token = signSession(normalizedEmail);
   const options = getCoachCookieOptions();
+  const cleared = { ...options, maxAge: 0 };
 
-  cookieStore.set(COACH_SESSION_COOKIE, token, options);
-  cookieStore.set(COACH_EMAIL_COOKIE, normalizedEmail, options);
+  cookieStore.set(COACH_SESSION_COOKIE, buildSessionValue(email), options);
+  cookieStore.set(COACH_EMAIL_COOKIE, "", cleared);
 }
 
 export async function clearCoachSession() {
   const cookieStore = await cookies();
-  const options = { ...getCoachCookieOptions(), maxAge: 0 };
+  const cleared = { ...getCoachCookieOptions(), maxAge: 0 };
 
-  cookieStore.set(COACH_SESSION_COOKIE, "", options);
-  cookieStore.set(COACH_EMAIL_COOKIE, "", options);
+  cookieStore.set(COACH_SESSION_COOKIE, "", cleared);
+  cookieStore.set(COACH_EMAIL_COOKIE, "", cleared);
 }
 
 export async function getLoggedInCoachEmail(): Promise<string | null> {
