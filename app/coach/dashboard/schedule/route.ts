@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  coachHtmlRedirectResponse,
+  coachRedirectWithSession,
   resolveCoachAuth,
 } from "@/lib/coach-auth";
 import {
-  lessonFlashFromParams,
   lessonFlashFromResult,
   scheduleLessonFromForm,
 } from "@/lib/coach-lessons";
@@ -13,14 +12,14 @@ import { getLocale } from "@/lib/locale";
 
 export const runtime = "nodejs";
 
-function dashboardPath(request: NextRequest, params: Record<string, string>) {
+function dashboardUrl(request: NextRequest, params: Record<string, string>) {
   const url = new URL("/coach/dashboard", request.url);
 
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
 
-  return `${url.pathname}${url.search}`;
+  return url;
 }
 
 export async function POST(request: NextRequest) {
@@ -51,13 +50,9 @@ export async function POST(request: NextRequest) {
       params.series_linked = "0";
     }
 
-    const flash = lessonFlashFromParams(params, t);
-    const message = flash?.message ?? t.coachSuccessLesson;
-
-    return coachHtmlRedirectResponse(
+    return coachRedirectWithSession(
       coachEmail,
-      dashboardPath(request, params),
-      message
+      dashboardUrl(request, params)
     );
   }
 
@@ -70,9 +65,5 @@ export async function POST(request: NextRequest) {
     params.conflict_date = result.conflictDate;
   }
 
-  return coachHtmlRedirectResponse(
-    coachEmail,
-    dashboardPath(request, params),
-    flash.message ?? t.coachErrGeneric
-  );
+  return coachRedirectWithSession(coachEmail, dashboardUrl(request, params));
 }

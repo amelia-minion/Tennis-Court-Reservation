@@ -259,44 +259,9 @@ export function clearCoachSessionCookies(response: NextResponse) {
   return response;
 }
 
-export function coachHtmlRedirectResponse(
-  email: string,
-  targetPath: string,
-  message: string
-) {
-  const safeTarget = targetPath.startsWith("/") ? targetPath : "/coach/dashboard";
-  const escaped = message
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  const html = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0;url=${safeTarget}" />
-    <title>Redirecting…</title>
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 32rem; margin: 4rem auto; padding: 0 1rem; color: #166534; }
-      a { color: #15803d; }
-    </style>
-  </head>
-  <body>
-    <p>${escaped}</p>
-    <p><a href="${safeTarget}">Continue to dashboard</a></p>
-  </body>
-</html>`;
-
-  const response = new NextResponse(html, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
-  });
-
+export function coachRedirectWithSession(email: string, target: URL) {
+  const response = NextResponse.redirect(target, 303);
   applyCoachSessionCookies(response, email);
-
   return response;
 }
 
