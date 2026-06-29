@@ -274,3 +274,53 @@ export function lessonFlashFromParams(
     message: t.coachErrGeneric,
   };
 }
+
+export async function deleteLessonById(
+  id: string
+): Promise<{ success: true } | { error: "generic" }> {
+  if (!id) {
+    return { error: "generic" };
+  }
+
+  const { error } = await supabase.from("lessons").delete().eq("id", id);
+
+  if (error) {
+    console.error("Failed to delete lesson:", error);
+    return { error: "generic" };
+  }
+
+  revalidatePath("/coach/dashboard");
+  revalidatePath("/courts", "layout");
+
+  return { success: true };
+}
+
+export function dashboardFlashFromParams(
+  params: {
+    lesson?: string;
+    lesson_error?: string;
+    lesson_deleted?: string;
+    count?: string;
+    conflict_date?: string;
+    series_linked?: string;
+  },
+  t: ReturnType<typeof getDictionary>
+): LessonFlash | null {
+  if (params.lesson_deleted === "1") {
+    return {
+      error: null,
+      success: true,
+      message: t.coachSuccessLessonDeleted,
+    };
+  }
+
+  if (params.lesson_error === "delete_failed") {
+    return {
+      error: "delete_failed",
+      success: false,
+      message: t.coachErrDeleteLesson,
+    };
+  }
+
+  return lessonFlashFromParams(params, t);
+}

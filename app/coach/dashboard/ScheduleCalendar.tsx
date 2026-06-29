@@ -39,6 +39,7 @@ type Props = {
   reservations: Reservation[];
   lessons: Lesson[];
   lessonsError: boolean;
+  formToken: string;
 };
 
 const START_HOUR = 5;
@@ -66,6 +67,7 @@ export default function ScheduleCalendar({
   reservations,
   lessons,
   lessonsError,
+  formToken,
 }: Props) {
   const t = getDictionary(locale);
   const todayKey = getTodayKey();
@@ -140,6 +142,7 @@ export default function ScheduleCalendar({
         hourHeight={HOUR_HEIGHT}
         gridHeight={GRID_HEIGHT}
         courts={COURTS}
+        formToken={formToken}
       />
 
       <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-gray-500">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { deleteLesson } from "./actions";
 import {
   displayCourt,
   getDictionary,
@@ -48,6 +47,7 @@ type Props = {
   hourHeight: number;
   gridHeight: number;
   courts: string[];
+  formToken: string;
 };
 
 function parseTimeToMinutes(time: string) {
@@ -179,10 +179,12 @@ function HourLabels({
 function EventModal({
   event,
   locale,
+  formToken,
   onClose,
 }: {
   event: SelectedEvent;
   locale: Locale;
+  formToken: string;
   onClose: () => void;
 }) {
   const t = getDictionary(locale);
@@ -328,7 +330,8 @@ function EventModal({
 
         <div className="mt-6 flex gap-3">
           {!isReservation && (
-            <form action={deleteLesson} className="flex-1">
+            <form action="/coach/dashboard/delete" method="POST" className="flex-1">
+              <input type="hidden" name="coach_token" value={formToken} />
               <input type="hidden" name="id" value={event.data.id} />
               <button
                 type="submit"
@@ -367,6 +370,7 @@ export default function ScheduleCalendarGrid({
   hourHeight,
   gridHeight,
   courts,
+  formToken,
 }: Props) {
   const [selectedEvent, setSelectedEvent] = useState<SelectedEvent | null>(
     null
@@ -540,6 +544,7 @@ export default function ScheduleCalendarGrid({
         <EventModal
           event={selectedEvent}
           locale={locale}
+          formToken={formToken}
           onClose={() => setSelectedEvent(null)}
         />
       )}

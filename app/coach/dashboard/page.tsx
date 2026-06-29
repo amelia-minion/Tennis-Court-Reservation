@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getLoggedInCoachEmail, requireCoach, createCoachFormToken } from "@/lib/coach-auth";
-import { lessonFlashFromParams } from "@/lib/coach-lessons";
+import { dashboardFlashFromParams } from "@/lib/coach-lessons";
 import { getDictionary } from "@/lib/i18n";
 import { getLocale } from "@/lib/locale";
 import {
@@ -16,6 +16,7 @@ type Props = {
   searchParams: Promise<{
     lesson?: string;
     lesson_error?: string;
+    lesson_deleted?: string;
     count?: string;
     conflict_date?: string;
     series_linked?: string;
@@ -28,7 +29,7 @@ export default async function CoachDashboardPage({ searchParams }: Props) {
   const locale = await getLocale();
   const t = getDictionary(locale);
   const flashParams = await searchParams;
-  const flash = lessonFlashFromParams(flashParams, t);
+  const flash = dashboardFlashFromParams(flashParams, t);
   const startDate = getTodayKey();
   const endDate = getWindowEndKey(COACH_SCHEDULING_DAYS_AHEAD);
 
@@ -87,6 +88,7 @@ export default async function CoachDashboardPage({ searchParams }: Props) {
           reservations={reservations ?? []}
           lessons={lessons ?? []}
           lessonsError={Boolean(lessonsError)}
+          formToken={formToken}
         />
       </div>
     </main>

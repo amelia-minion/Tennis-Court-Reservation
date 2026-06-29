@@ -129,6 +129,8 @@ const en = {
   coachErrUnauthorized:
     "Your session expired. Please log in again to schedule lessons.",
   coachSuccessLesson: "Lesson scheduled successfully.",
+  coachSuccessLessonDeleted: "Lesson deleted successfully.",
+  coachErrDeleteLesson: "Could not delete the lesson. Please try again.",
   coachSuccessWeeklyLessons: "{count} weekly lessons scheduled successfully.",
   coachSeriesGroupingHint:
     " Run supabase/lessons-recurring.sql in Supabase to enable weekly series grouping.",
@@ -270,6 +272,8 @@ const vi: typeof en = {
   coachErrUnauthorized:
     "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để lên lịch buổi dạy.",
   coachSuccessLesson: "Đã lên lịch buổi dạy thành công.",
+  coachSuccessLessonDeleted: "Đã xóa buổi dạy thành công.",
+  coachErrDeleteLesson: "Không thể xóa buổi dạy. Vui lòng thử lại.",
   coachSuccessWeeklyLessons: "Đã lên lịch {count} buổi dạy hàng tuần thành công.",
   coachSeriesGroupingHint:
     " Chạy supabase/lessons-recurring.sql trong Supabase để nhóm các buổi dạy hàng tuần.",
