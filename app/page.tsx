@@ -8,6 +8,13 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-stone-50 flex flex-col px-4">
+      <Link
+        href="/introduction"
+        className="fixed top-4 left-4 z-50 rounded-full border border-green-700 bg-green-700 text-white shadow-sm px-4 py-1.5 text-sm font-semibold transition hover:bg-green-800 hover:border-green-800"
+      >
+        {t.courtIntroduction}
+      </Link>
+
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
           <h1 className="text-5xl font-bold text-green-800 mb-4">

@@ -20,6 +20,7 @@ const en = {
   homeSubtitle: "Choose a court, view availability, and reserve your time.",
   viewCourts: "View Courts",
   viewRates: "View Court Rates",
+  courtIntroduction: "Court Introduction",
   coachLoginLink: "Coach login",
 
   // Courts list
@@ -150,6 +151,23 @@ const en = {
   coachModalNotes: "Notes",
   coachModalLessonTitle: "Lesson",
   coachLane: "Lane {lane}: {court}",
+
+  // Court introduction
+  introTitle: "Court Introduction",
+  introSubtitle: "Welcome to our tennis facility.",
+  introCourtName: "Court name",
+  introAddress: "Address",
+  introPhone: "Phone",
+  introHours: "Hours of operation",
+  introCourtNameValue: "Xanh Bến Thành",
+  introAddressValue:
+    "Gia Hoa Art Village Residential Area, Phuoc Long Ward, Ho Chi Minh City",
+  introPhoneValue: "033713339",
+  introHoursValue: "5 AM – 10 PM",
+  introPhotosTitle: "Photos",
+  introPhotosPlaceholder: "Court photos will be added here soon.",
+  introMapTitle: "Location",
+  introMapOpen: "Open in Google Maps",
 };
 
 const vi: typeof en = {
@@ -165,6 +183,7 @@ const vi: typeof en = {
   homeSubtitle: "Chọn sân, xem lịch trống và đặt giờ chơi của bạn.",
   viewCourts: "Xem sân",
   viewRates: "Xem bảng giá",
+  courtIntroduction: "Giới thiệu sân",
   coachLoginLink: "Đăng nhập huấn luyện viên",
 
   // Courts list
@@ -293,6 +312,23 @@ const vi: typeof en = {
   coachModalNotes: "Ghi chú",
   coachModalLessonTitle: "Buổi dạy",
   coachLane: "Hàng {lane}: {court}",
+
+  // Court introduction
+  introTitle: "Giới thiệu sân",
+  introSubtitle: "Chào mừng bạn đến với sân tennis của chúng tôi.",
+  introCourtName: "Tên sân",
+  introAddress: "Địa chỉ",
+  introPhone: "Số điện thoại",
+  introHours: "Giờ hoạt động",
+  introCourtNameValue: "Xanh Bến Thành",
+  introAddressValue:
+    "Khu Dân Cư Gia Hòa Art Village, Phường Phước Long, HCM",
+  introPhoneValue: "033713339",
+  introHoursValue: "5 AM – 10 PM",
+  introPhotosTitle: "Hình ảnh",
+  introPhotosPlaceholder: "Hình ảnh sân sẽ được cập nhật sắp tới.",
+  introMapTitle: "Bản đồ",
+  introMapOpen: "Mở trên Google Maps",
 };
 
 export type Dictionary = typeof en;
